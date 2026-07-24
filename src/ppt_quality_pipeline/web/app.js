@@ -88,8 +88,13 @@ function currentAnnotation() {
   return state.annotations[key];
 }
 
-function renderAutomatedStatus(item) {
+function renderAutomatedStatus(item, deck) {
   elements.automatedStatus.innerHTML = "";
+  const fidelity = document.createElement("div");
+  fidelity.className = `issue-chip ${deck.fidelity === "high" ? "pass" : ""}`;
+  fidelity.textContent =
+    `${deck.fidelity === "high" ? "High-fidelity" : "Preview"} render · ${deck.renderer}`;
+  elements.automatedStatus.append(fidelity);
   const issues = item.issues || [];
   if (!issues.length) {
     const chip = document.createElement("div");
@@ -124,10 +129,11 @@ function render() {
   }
 
   elements.slideImage.src = `/assets/${page.path.split("/").map(encodeURIComponent).join("/")}`;
-  elements.slideTitle.textContent = `${page.item.id} · ${page.deck.kind.toUpperCase()}`;
+  elements.slideTitle.textContent =
+    `${page.item.id} · ${page.deck.kind.toUpperCase()} · ${page.deck.renderer}`;
   elements.slidePosition.textContent = `${state.current + 1} / ${state.pages.length}`;
   elements.query.textContent = page.item.query;
-  renderAutomatedStatus(page.item);
+  renderAutomatedStatus(page.item, page.deck);
   const annotation = currentAnnotation();
   elements.note.value = annotation.note || "";
   elements.labels.forEach((button) => {

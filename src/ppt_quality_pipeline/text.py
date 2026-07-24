@@ -19,15 +19,16 @@ def extract_html_text(path: Path) -> str:
 
 def extract_pptx_text(path: Path) -> str:
     chunks: list[str] = []
-    with zipfile.ZipFile(path) as archive:
-        slide_names = sorted(
-            name
-            for name in archive.namelist()
-            if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)
-        )
-        for name in slide_names:
-            xml = archive.read(name).decode("utf-8", errors="ignore")
-            chunks.extend(html.unescape(item) for item in re.findall(r"<a:t>(.*?)</a:t>", xml, re.DOTALL))
+    try:
+        with zipfile.ZipFile(path) as archive:
+            slide_names = sorted(
+                name for name in archive.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)
+            )
+            for name in slide_names:
+                xml = archive.read(name).decode("utf-8", errors="ignore")
+                chunks.extend(html.unescape(item) for item in re.findall(r"<a:t>(.*?)</a:t>", xml, re.DOTALL))
+    except zipfile.BadZipFile:
+        return ""
     return normalize_text(" ".join(chunks))
 
 

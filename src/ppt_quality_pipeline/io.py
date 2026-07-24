@@ -23,9 +23,7 @@ def load_tasks(path: Path) -> list[Task]:
     path = path.resolve()
     if path.suffix.lower() == ".jsonl":
         values = [
-            json.loads(line)
-            for line in path.read_text(encoding="utf-8-sig").splitlines()
-            if line.strip()
+            json.loads(line) for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()
         ]
     else:
         raw = read_json(path)

@@ -32,12 +32,16 @@ def report_rows(run_dir: Path) -> list[dict[str, Any]]:
     for item in report["items"]:
         issues = "; ".join(issue["message"] for issue in item["issues"]) or "No automated issues"
         pages = sum(deck["page_count"] for deck in item["decks"] if deck["status"] == "rendered")
+        renderers = ", ".join(dict.fromkeys(deck["renderer"] for deck in item["decks"] if deck["renderer"]))
+        fidelity = ", ".join(dict.fromkeys(deck["fidelity"] for deck in item["decks"] if deck["fidelity"]))
         rows.append(
             {
                 "id": item["id"],
                 "status": item["status"],
                 "query": item["query"],
                 "rendered_pages": pages,
+                "renderers": renderers,
+                "fidelity": fidelity,
                 "automated_issues": issues,
                 "manual_annotations": annotations.get(item["id"], ""),
             }
@@ -49,7 +53,16 @@ def export_csv(run_dir: Path, output: Path | None = None) -> Path:
     output = output or run_dir / "report.csv"
     rows = report_rows(run_dir)
     output.parent.mkdir(parents=True, exist_ok=True)
-    fields = ["id", "status", "query", "rendered_pages", "automated_issues", "manual_annotations"]
+    fields = [
+        "id",
+        "status",
+        "query",
+        "rendered_pages",
+        "renderers",
+        "fidelity",
+        "automated_issues",
+        "manual_annotations",
+    ]
     with output.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
@@ -69,7 +82,16 @@ def export_xlsx(run_dir: Path, output: Path | None = None) -> Path:
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "PPT Quality Report"
-    headers = ["ID", "Status", "Query", "Rendered pages", "Automated issues", "Manual annotations"]
+    headers = [
+        "ID",
+        "Status",
+        "Query",
+        "Rendered pages",
+        "Renderers",
+        "Fidelity",
+        "Automated issues",
+        "Manual annotations",
+    ]
     sheet.append(headers)
     for cell in sheet[1]:
         cell.font = Font(bold=True, color="FFFFFF")
@@ -82,11 +104,13 @@ def export_xlsx(run_dir: Path, output: Path | None = None) -> Path:
                 row["status"],
                 row["query"],
                 row["rendered_pages"],
+                row["renderers"],
+                row["fidelity"],
                 row["automated_issues"],
                 row["manual_annotations"],
             ]
         )
-    widths = [18, 14, 58, 18, 72, 72]
+    widths = [18, 14, 58, 18, 28, 14, 72, 72]
     for index, width in enumerate(widths, 1):
         sheet.column_dimensions[chr(64 + index)].width = width
     for row in sheet.iter_rows(min_row=2):

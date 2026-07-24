@@ -26,7 +26,8 @@ can stay private while sharing the same normalized pipeline.
 
 - Deterministic run archives with provenance for every artifact
 - HTML slide rendering through Playwright and system Chrome/Chromium
-- Image, PDF, and portable PPTX preview adapters
+- Native PowerPoint and LibreOffice high-fidelity PPTX rendering
+- Image and PDF rendering with PyMuPDF or Poppler
 - Page-count, required-content, forbidden-content, and missing-output checks
 - Local human-review workspace for overflow, overlap, blank pages, and notes
 - JSON, CSV, and optional XLSX exports
@@ -40,6 +41,7 @@ Requirements:
 - Python 3.10+
 - Node.js 20+
 - Chrome, Edge, or Chromium
+- Microsoft PowerPoint on Windows, or LibreOffice, for high-fidelity PPTX rendering
 
 ```bash
 git clone https://github.com/your-name/ppt-quality-pipeline.git
@@ -102,12 +104,29 @@ docs/               architecture and data contracts
 | --- | --- | --- |
 | HTML | Full | Playwright captures `[data-slide]`, `.slide`, `.ppt-slide`, or `section`. |
 | Images | Full | Each image is treated as one rendered page. |
-| PDF | Optional | Install the `pdf` extra for PyMuPDF rendering. |
-| PPTX | Preview | Extracts slide text into portable previews; use a production adapter for visual fidelity. |
+| PDF | Full | Uses PyMuPDF when installed, otherwise Poppler `pdftoppm`. |
+| PPTX on Windows | High fidelity | Microsoft PowerPoint exports every slide to a 1080px-high PNG. |
+| PPTX cross-platform | High fidelity | LibreOffice converts the deck to PDF before page rasterization. |
+| PPTX fallback | Preview | A clearly marked text preview is used only when no visual backend is available. |
 
-The renderer registry is intentionally replaceable. A deployment can add
-LibreOffice, Microsoft PowerPoint, or a managed rendering service without
-changing the evaluator or review workspace.
+![Native PowerPoint rendering example](docs/images/pptx-native-render.png)
+
+The default `auto` backend tries Microsoft PowerPoint, then LibreOffice, and
+finally the text preview. Reports include `renderer` and `fidelity`; a
+low-fidelity preview creates an explicit review warning.
+
+Configure the renderer with:
+
+```text
+PQP_PPTX_BACKEND=auto|powerpoint|libreoffice|preview
+PQP_PPTX_HEIGHT=1080
+PQP_PPTX_STRICT=1
+PQP_LIBREOFFICE=/path/to/soffice
+PQP_PDFTOPPM=/path/to/pdftoppm
+```
+
+`PQP_PPTX_STRICT=1` prevents silent preview fallback when high-fidelity
+rendering is unavailable. See [Rendering backends](docs/rendering.md).
 
 ## Architecture and safety
 
@@ -123,11 +142,20 @@ authentication.
 ## Development
 
 ```bash
+python -m ruff check src tests
+python -m ruff format --check src tests
 python -m unittest discover -s tests -v
 pnpm run check
 ```
 
 GitHub Actions runs both checks on every push and pull request.
+
+Windows developers with Microsoft PowerPoint can run the native integration
+check:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify_powerpoint_renderer.ps1
+```
 
 ## License
 

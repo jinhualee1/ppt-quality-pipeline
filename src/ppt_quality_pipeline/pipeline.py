@@ -101,7 +101,16 @@ class Pipeline:
                 "passed": sum(result.status == "passed" for result in results),
                 "needs_review": sum(result.status == "needs_review" for result in results),
                 "rendered_pages": sum(
-                    deck.page_count for result in results for deck in result.decks if deck.status == "rendered"
+                    deck.page_count
+                    for result in results
+                    for deck in result.decks
+                    if deck.status == "rendered"
+                ),
+                "high_fidelity_decks": sum(
+                    deck.fidelity == "high" for result in results for deck in result.decks
+                ),
+                "low_fidelity_decks": sum(
+                    deck.fidelity == "low" for result in results for deck in result.decks
                 ),
             },
             "items": [result.to_dict() for result in results],

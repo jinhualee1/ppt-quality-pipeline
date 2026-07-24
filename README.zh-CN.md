@@ -21,7 +21,9 @@
 
 - 为每个产物保存稳定、可审计的运行目录
 - 使用 Playwright 和本机 Chrome/Chromium 渲染 HTML 幻灯片
-- 支持图片、PDF，以及可移植的 PPTX 文本预览
+- 在 Windows 上调用 Microsoft PowerPoint 进行高保真 PPTX 渲染
+- 提供 LibreOffice 跨平台高保真后备链路
+- 使用 PyMuPDF 或 Poppler 渲染 PDF
 - 检查页数、必需内容、禁用内容和缺失产物
 - 提供人工标注页面，记录超框、重叠、空白页和备注
 - 导出 JSON、CSV 和可选 XLSX 报告
@@ -30,7 +32,7 @@
 
 ## 快速开始
 
-需要 Python 3.10+、Node.js 20+ 和 Chrome、Edge 或 Chromium。
+需要 Python 3.10+、Node.js 20+ 和 Chrome、Edge 或 Chromium。高保真 PPTX 渲染还需要 Windows 上的 Microsoft PowerPoint，或跨平台的 LibreOffice。
 
 ```bash
 python -m venv .venv
@@ -66,15 +68,29 @@ pqp export --run-dir runs/my-run --format xlsx
 ## 当前边界
 
 - HTML 与图片可进行视觉渲染。
-- PDF 需要安装 `pdf` 可选依赖。
-- PPTX 默认生成文字预览，不等价于完整视觉渲染；生产环境应接入 LibreOffice、Microsoft PowerPoint 或托管渲染服务。
+- PDF 优先使用 PyMuPDF，也可以自动调用 Poppler `pdftoppm`。
+- Windows 环境优先调用 Microsoft PowerPoint，将每页导出为 1080 像素高的 PNG。
+- macOS 和 Linux 可以使用 LibreOffice 转换为 PDF 后逐页渲染。
+- 没有视觉后端时才使用文字预览，并在报告中明确标记为低保真。
 - 本地标注服务默认只监听 `127.0.0.1`，没有身份认证，不应暴露到不可信网络。
+
+![PowerPoint 原生渲染示例](docs/images/pptx-native-render.png)
+
+渲染顺序、环境变量和严格模式见 [渲染后端说明](docs/rendering.md)。
 
 ## 测试
 
 ```bash
+python -m ruff check src tests
+python -m ruff format --check src tests
 python -m unittest discover -s tests -v
 pnpm run check
+```
+
+安装 Microsoft PowerPoint 的 Windows 环境可以运行原生集成检查：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/verify_powerpoint_renderer.ps1
 ```
 
 ## 许可证

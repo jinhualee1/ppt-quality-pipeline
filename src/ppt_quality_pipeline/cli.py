@@ -9,6 +9,7 @@ from pathlib import Path
 from . import __version__
 from .exporter import export_csv, export_json_summary, export_xlsx
 from .pipeline import Pipeline
+from .renderers import libreoffice_executable, pdftoppm_available, powerpoint_available
 from .server import serve
 
 
@@ -47,7 +48,7 @@ def _demo_command(args: argparse.Namespace) -> int:
         print(f"Excel report: {xlsx}")
     except RuntimeError as exc:
         print(f"Excel report skipped: {exc}")
-    print(f"Review: pqp serve --run-dir \"{output.resolve()}\"")
+    print(f'Review: pqp serve --run-dir "{output.resolve()}"')
     return result
 
 
@@ -86,6 +87,9 @@ def _doctor_command(_: argparse.Namespace) -> int:
         "openpyxl": importlib.util.find_spec("openpyxl") is not None,
         "pillow": importlib.util.find_spec("PIL") is not None,
         "pymupdf": importlib.util.find_spec("fitz") is not None,
+        "powerpoint": powerpoint_available(),
+        "libreoffice": bool(libreoffice_executable()),
+        "pdftoppm": pdftoppm_available(),
     }
     width = max(len(key) for key in checks)
     for key, available in checks.items():
@@ -106,7 +110,9 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--tasks", required=True, help="JSON or JSONL task file.")
     run_parser.add_argument("--output", required=True, help="Run output directory.")
     run_parser.add_argument("--overwrite", action="store_true", help="Replace an existing marked run.")
-    run_parser.add_argument("--skip-render", action="store_true", help="Collect and evaluate without rendering.")
+    run_parser.add_argument(
+        "--skip-render", action="store_true", help="Collect and evaluate without rendering."
+    )
     run_parser.set_defaults(handler=_run_command)
 
     demo_parser = subparsers.add_parser("demo", help="Run the synthetic portfolio demo.")

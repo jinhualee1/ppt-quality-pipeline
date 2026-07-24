@@ -34,6 +34,20 @@ def evaluate(
             )
         )
 
+    for deck in decks:
+        if deck.kind == "pptx" and deck.status == "rendered" and deck.fidelity != "high":
+            issues.append(
+                Issue(
+                    code="LOW_FIDELITY_RENDER",
+                    message=(
+                        f"{Path(deck.artifact_path).name} was rendered with "
+                        f"{deck.renderer}; visual layout findings require a high-fidelity renderer."
+                    ),
+                    severity="warning",
+                    evidence={"artifact": deck.artifact_path, "renderer": deck.renderer},
+                )
+            )
+
     rendered = [deck for deck in decks if deck.status == "rendered" and deck.page_count > 0]
     if expectation.page_count is not None and rendered:
         actual = rendered[-1].page_count

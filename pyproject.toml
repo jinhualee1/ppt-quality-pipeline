@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ppt-quality-pipeline"
-version = "0.1.0"
+version = "0.2.0"
 description = "A reproducible pipeline for collecting, rendering, reviewing, and reporting presentation quality."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -37,7 +37,7 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-ppt_quality_pipeline = ["browser/*", "web/*"]
+ppt_quality_pipeline = ["backends/*", "browser/*", "web/*"]
 
 [tool.ruff]
 line-length = 110

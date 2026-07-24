@@ -79,7 +79,9 @@ class RenderedDeck:
     page_count: int = 0
     status: str = "pending"
     renderer: str = ""
+    fidelity: str = "unknown"
     error: str = ""
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

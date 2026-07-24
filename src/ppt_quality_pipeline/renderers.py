@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
+import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -30,37 +33,83 @@ def _find_executable(env_name: str, candidates: list[str]) -> str | None:
 
 
 def _node_executable() -> str | None:
+    return _find_executable("PQP_NODE", ["node", r"C:\Program Files\nodejs\node.exe"])
+
+
+def _powershell_executable() -> str | None:
     return _find_executable(
-        "PQP_NODE",
+        "PQP_POWERSHELL",
+        ["powershell.exe", "pwsh", r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"],
+    )
+
+
+def libreoffice_executable() -> str | None:
+    return _find_executable(
+        "PQP_LIBREOFFICE",
         [
-            "node",
-            r"C:\Program Files\nodejs\node.exe",
+            "soffice",
+            "libreoffice",
+            r"C:\Program Files\LibreOffice\program\soffice.exe",
+            r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+            "/usr/bin/libreoffice",
+            "/usr/bin/soffice",
+            "/Applications/LibreOffice.app/Contents/MacOS/soffice",
         ],
     )
+
+
+def pdftoppm_executable() -> str | None:
+    return _find_executable("PQP_PDFTOPPM", ["pdftoppm", "pdftoppm.exe"])
+
+
+def pdftoppm_available() -> bool:
+    executable = pdftoppm_executable()
+    if not executable:
+        return False
+    try:
+        completed = subprocess.run(
+            [executable, "-v"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return completed.returncode == 0
+
+
+def powerpoint_available() -> bool:
+    if sys.platform != "win32" or not _powershell_executable():
+        return False
+    try:
+        import winreg
+
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, r"PowerPoint.Application\CLSID"):
+            return True
+    except (ImportError, FileNotFoundError, OSError):
+        return False
 
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _packaged_helper(folder: str, name: str) -> Path:
+    packaged = Path(__file__).resolve().parent / folder / name
+    source = _project_root() / "scripts" / name
+    return packaged if packaged.is_file() else source
+
+
 def render_html(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
     node = _node_executable()
     if not node:
         raise RenderError("Node.js was not found. Set PQP_NODE or install Node.js.")
-    packaged_helper = Path(__file__).resolve().parent / "browser" / "render_html.mjs"
-    source_helper = _project_root() / "scripts" / "render_html.mjs"
-    helper = packaged_helper if packaged_helper.is_file() else source_helper
+    helper = _packaged_helper("browser", "render_html.mjs")
     if not helper.is_file():
         raise RenderError(f"HTML renderer helper is missing: {helper}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    command = [
-        node,
-        str(helper),
-        "--input",
-        str(source),
-        "--output",
-        str(output_dir),
-    ]
+    command = [node, str(helper), "--input", str(source), "--output", str(output_dir)]
     completed = subprocess.run(
         command,
         capture_output=True,
@@ -72,8 +121,7 @@ def render_html(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
     if completed.returncode != 0:
         detail = (completed.stderr or completed.stdout).strip()
         raise RenderError(detail or "HTML renderer failed.")
-    manifest_path = output_dir / "render_manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = json.loads((output_dir / "render_manifest.json").read_text(encoding="utf-8"))
     pages = [relative_posix(output_dir / name, run_dir) for name in manifest["pages"]]
     return RenderedDeck(
         artifact_path=relative_posix(source, run_dir),
@@ -82,6 +130,7 @@ def render_html(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
         page_count=len(pages),
         status="rendered",
         renderer="playwright",
+        fidelity="high",
     )
 
 
@@ -96,30 +145,171 @@ def render_image(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
         page_count=1,
         status="rendered",
         renderer="image-copy",
+        fidelity="high",
     )
 
 
-def render_pdf(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+def _natural_number(path: Path) -> int:
+    match = re.search(r"(\d+)(?!.*\d)", path.stem)
+    return int(match.group(1)) if match else 0
+
+
+def _render_pdf_pages(source: Path, output_dir: Path) -> tuple[list[Path], str]:
+    output_dir.mkdir(parents=True, exist_ok=True)
     try:
         import fitz  # type: ignore[import-not-found]
-    except ImportError as exc:
-        raise RenderError("PDF rendering requires the optional 'pdf' dependency: pip install -e .[pdf]") from exc
+    except ImportError:
+        fitz = None
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    pages: list[str] = []
-    with fitz.open(source) as document:
-        for index, page in enumerate(document):
-            pixmap = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
-            destination = output_dir / f"page_{index + 1:03d}.png"
-            pixmap.save(destination)
-            pages.append(relative_posix(destination, run_dir))
+    if fitz is not None:
+        pages = []
+        with fitz.open(source) as document:
+            for index, page in enumerate(document):
+                pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+                destination = output_dir / f"page_{index + 1:03d}.png"
+                pixmap.save(destination)
+                pages.append(destination)
+        return pages, "pymupdf"
+
+    pdftoppm = pdftoppm_executable()
+    if not pdftoppm:
+        raise RenderError(
+            "PDF rendering requires PyMuPDF or pdftoppm. Install the 'pdf' extra or set PQP_PDFTOPPM."
+        )
+    prefix = output_dir / "_page"
+    completed = subprocess.run(
+        [pdftoppm, "-png", "-r", "180", str(source), str(prefix)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=300,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise RenderError(detail or "pdftoppm failed.")
+    generated = sorted(output_dir.glob("_page-*.png"), key=_natural_number)
+    pages = []
+    for index, generated_page in enumerate(generated, 1):
+        destination = output_dir / f"page_{index:03d}.png"
+        generated_page.replace(destination)
+        pages.append(destination)
+    if not pages:
+        raise RenderError("PDF renderer produced no pages.")
+    return pages, "pdftoppm"
+
+
+def render_pdf(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+    pages, backend = _render_pdf_pages(source, output_dir)
     return RenderedDeck(
         artifact_path=relative_posix(source, run_dir),
         kind="pdf",
-        pages=pages,
+        pages=[relative_posix(page, run_dir) for page in pages],
         page_count=len(pages),
         status="rendered",
-        renderer="pymupdf",
+        renderer=backend,
+        fidelity="high",
+    )
+
+
+def render_pptx_powerpoint(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+    if sys.platform != "win32":
+        raise RenderError("Microsoft PowerPoint rendering is available only on Windows.")
+    powershell = _powershell_executable()
+    if not powershell:
+        raise RenderError("PowerShell was not found.")
+    helper = _packaged_helper("backends", "render_pptx_powerpoint.ps1")
+    if not helper.is_file():
+        raise RenderError(f"PowerPoint renderer helper is missing: {helper}")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    command = [
+        powershell,
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(helper),
+        "-InputPath",
+        str(source.resolve()),
+        "-OutputDir",
+        str(output_dir.resolve()),
+        "-Height",
+        os.environ.get("PQP_PPTX_HEIGHT", "1080"),
+    ]
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=300,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise RenderError(detail or "Microsoft PowerPoint rendering failed.")
+    pages = sorted(output_dir.glob("page_*.png"), key=_natural_number)
+    if not pages:
+        raise RenderError("Microsoft PowerPoint produced no rendered pages.")
+    return RenderedDeck(
+        artifact_path=relative_posix(source, run_dir),
+        kind="pptx",
+        pages=[relative_posix(page, run_dir) for page in pages],
+        page_count=len(pages),
+        status="rendered",
+        renderer="microsoft-powerpoint",
+        fidelity="high",
+    )
+
+
+def render_pptx_libreoffice(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+    soffice = libreoffice_executable()
+    if not soffice:
+        raise RenderError("LibreOffice was not found. Set PQP_LIBREOFFICE or install LibreOffice.")
+    conversion_dir = output_dir / "_conversion"
+    profile_dir = conversion_dir / "profile"
+    conversion_dir.mkdir(parents=True, exist_ok=True)
+    profile_uri = profile_dir.resolve().as_uri()
+    command = [
+        soffice,
+        "--headless",
+        f"-env:UserInstallation={profile_uri}",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        str(conversion_dir),
+        str(source.resolve()),
+    ]
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=300,
+        check=False,
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        raise RenderError(detail or "LibreOffice conversion failed.")
+    pdfs = sorted(conversion_dir.glob("*.pdf"))
+    if not pdfs:
+        raise RenderError("LibreOffice produced no PDF.")
+    try:
+        pages, pdf_backend = _render_pdf_pages(pdfs[0], output_dir)
+    finally:
+        shutil.rmtree(conversion_dir, ignore_errors=True)
+    return RenderedDeck(
+        artifact_path=relative_posix(source, run_dir),
+        kind="pptx",
+        pages=[relative_posix(page, run_dir) for page in pages],
+        page_count=len(pages),
+        status="rendered",
+        renderer=f"libreoffice+{pdf_backend}",
+        fidelity="high",
     )
 
 
@@ -131,17 +321,23 @@ def _pptx_slide_texts(source: Path) -> list[str]:
         return [text] if text else []
 
     deck = Presentation(source)
-    slide_texts: list[str] = []
+    slide_texts = []
     for slide in deck.slides:
-        chunks = []
-        for shape in slide.shapes:
-            if hasattr(shape, "text") and str(shape.text).strip():
-                chunks.append(str(shape.text).strip())
+        chunks = [
+            str(shape.text).strip()
+            for shape in slide.shapes
+            if hasattr(shape, "text") and str(shape.text).strip()
+        ]
         slide_texts.append("\n".join(chunks))
     return slide_texts
 
 
-def render_pptx_preview(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+def render_pptx_preview(
+    source: Path,
+    output_dir: Path,
+    run_dir: Path,
+    warnings: list[str] | None = None,
+) -> RenderedDeck:
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as exc:
@@ -151,7 +347,7 @@ def render_pptx_preview(source: Path, output_dir: Path, run_dir: Path) -> Render
     if not slide_texts:
         raise RenderError("No slides could be read from the PPTX file.")
     output_dir.mkdir(parents=True, exist_ok=True)
-    pages: list[str] = []
+    pages = []
     font = ImageFont.load_default()
     for index, text in enumerate(slide_texts):
         image = Image.new("RGB", (1280, 720), "#f7f8fa")
@@ -165,7 +361,7 @@ def render_pptx_preview(source: Path, output_dir: Path, run_dir: Path) -> Render
                 paragraph = paragraph[92:]
             wrapped.append(paragraph)
         draw.multiline_text((56, 110), "\n".join(wrapped[:22]), fill="#24313d", font=font, spacing=12)
-        draw.text((56, 676), "Text preview: use LibreOffice or PowerPoint for visual-fidelity rendering.", fill="#687684", font=font)
+        draw.text((56, 676), "Low-fidelity text preview", fill="#a15c05", font=font)
         destination = output_dir / f"page_{index + 1:03d}.png"
         image.save(destination)
         pages.append(relative_posix(destination, run_dir))
@@ -176,7 +372,36 @@ def render_pptx_preview(source: Path, output_dir: Path, run_dir: Path) -> Render
         page_count=len(pages),
         status="rendered",
         renderer="pptx-text-preview",
+        fidelity="low",
+        warnings=warnings or ["No high-fidelity PPTX renderer was available."],
     )
+
+
+def render_pptx(source: Path, output_dir: Path, run_dir: Path) -> RenderedDeck:
+    backend = os.environ.get("PQP_PPTX_BACKEND", "auto").strip().lower()
+    if backend not in {"auto", "powerpoint", "libreoffice", "preview"}:
+        raise RenderError("PQP_PPTX_BACKEND must be auto, powerpoint, libreoffice, or preview.")
+
+    errors = []
+    if backend in {"auto", "powerpoint"}:
+        try:
+            return render_pptx_powerpoint(source, output_dir, run_dir)
+        except RenderError as exc:
+            errors.append(f"PowerPoint: {exc}")
+            if backend == "powerpoint":
+                raise
+
+    if backend in {"auto", "libreoffice"}:
+        try:
+            return render_pptx_libreoffice(source, output_dir, run_dir)
+        except RenderError as exc:
+            errors.append(f"LibreOffice: {exc}")
+            if backend == "libreoffice":
+                raise
+
+    if backend == "preview" or os.environ.get("PQP_PPTX_STRICT", "").lower() not in {"1", "true", "yes"}:
+        return render_pptx_preview(source, output_dir, run_dir, errors)
+    raise RenderError("; ".join(errors) or "No high-fidelity PPTX renderer was available.")
 
 
 def render_artifact(artifact: dict[str, Any], run_dir: Path, output_dir: Path) -> RenderedDeck:
@@ -190,7 +415,7 @@ def render_artifact(artifact: dict[str, Any], run_dir: Path, output_dir: Path) -
         elif kind == "pdf":
             result = render_pdf(source, output_dir, run_dir)
         elif kind == "pptx":
-            result = render_pptx_preview(source, output_dir, run_dir)
+            result = render_pptx(source, output_dir, run_dir)
         else:
             raise RenderError(f"No renderer is registered for artifact kind '{kind}'.")
     except (OSError, RenderError, subprocess.SubprocessError) as exc:
@@ -199,15 +424,8 @@ def render_artifact(artifact: dict[str, Any], run_dir: Path, output_dir: Path) -
             kind=kind,
             status="failed",
             renderer="",
+            fidelity="none",
             error=str(exc),
         )
-    write_json(output_dir / "deck.json", result.__dict__ if hasattr(result, "__dict__") else {
-        "artifact_path": result.artifact_path,
-        "kind": result.kind,
-        "pages": result.pages,
-        "page_count": result.page_count,
-        "status": result.status,
-        "renderer": result.renderer,
-        "error": result.error,
-    })
+    write_json(output_dir / "deck.json", asdict(result))
     return result

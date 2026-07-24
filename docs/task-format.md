@@ -32,8 +32,8 @@ file.
 | --- | --- |
 | `html` | Render each `[data-slide]`, `.slide`, `.ppt-slide`, or `section` with Playwright. |
 | `image` | Stage the image as a one-page rendered deck. |
-| `pdf` | Render pages when the optional PyMuPDF dependency is installed. |
-| `pptx` | Produce a text-oriented preview with Pillow and optional `python-pptx`. |
+| `pdf` | Render with PyMuPDF or Poppler `pdftoppm`. |
+| `pptx` | Use PowerPoint, then LibreOffice, then an explicit low-fidelity text preview. |
 | `auto` | Infer the kind from the file extension. |
 
 `role` should be `generated` for the artifact being evaluated. Other roles can

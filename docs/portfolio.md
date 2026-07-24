@@ -12,6 +12,8 @@ and structured reports.
   evaluating, and reviewing presentation artifacts with traceable provenance.
 - Implemented deterministic checks for output availability, page count, and
   content requirements, with JSON, CSV, and XLSX reporting.
+- Added native Microsoft PowerPoint rendering and a LibreOffice fallback,
+  recording backend and fidelity metadata for every rendered deck.
 - Built a responsive local annotation workspace for slide-level overflow,
   overlap, blank-page, and reviewer-note workflows.
 - Separated private source-system collectors from a reusable public evaluation
@@ -21,6 +23,7 @@ and structured reports.
 
 - 设计并实现生成式 PPT 质量评估流水线，覆盖产物归档、页面渲染、规则检查、人工标注与结构化报告导出。
 - 基于 Python 与 Playwright 构建模块化适配器，支持 HTML、图片、PDF 和 PPTX 预览，并保留完整证据链。
+- 接入 Microsoft PowerPoint 原生逐页导出与 LibreOffice 后备链路，实现 PPTX 高保真渲染并记录渲染后端。
 - 实现页数、必需内容、禁用内容及缺失产物等确定性检查，并输出 JSON、CSV、XLSX 报告。
 - 将内部数据采集逻辑与公开评估核心解耦，使用合成数据构建可复现、可安全发布的 GitHub Demo。
 

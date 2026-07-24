@@ -1,7 +1,7 @@
 {
   "name": "ppt-quality-pipeline-browser-tools",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Browser rendering helper for PPT Quality Pipeline",
   "type": "module",
   "packageManager": "pnpm@11.9.0",

@@ -37,6 +37,8 @@ implement its own collector and pass normalized artifacts to the same pipeline.
 Public code does not need to know the source system, authentication model, or
 browser profile.
 
-The current PPTX renderer is a portable text-preview fallback. Production
-deployments should register a visual-fidelity adapter backed by LibreOffice,
-Microsoft PowerPoint, or a managed rendering service.
+PPTX rendering uses an ordered backend registry. Windows deployments prefer
+native Microsoft PowerPoint export; other platforms can use LibreOffice and a
+PDF rasterizer. A portable text preview remains available as an explicit,
+low-fidelity fallback. Backend and fidelity metadata flow into automated
+issues, the review workspace, and exported reports.
