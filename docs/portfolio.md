@@ -1,0 +1,43 @@
+# Portfolio Notes
+
+## One-line description
+
+Built and delivered an end-to-end presentation quality workflow that processed
+real annotation data and converted generated artifacts into rendered evidence,
+deterministic findings, human annotations, and structured delivery reports.
+
+## Resume bullets
+
+- Designed a modular Python and Playwright pipeline for staging, rendering,
+  evaluating, and reviewing presentation artifacts with traceable provenance.
+- Implemented deterministic checks for output availability, page count, and
+  content requirements, with JSON, CSV, and XLSX reporting.
+- Added native Microsoft PowerPoint rendering and a LibreOffice fallback,
+  recording backend and fidelity metadata for every rendered deck.
+- Built a responsive local annotation workspace for slide-level overflow,
+  overlap, blank-page, and reviewer-note workflows.
+- Applied the workflow to real presentation annotation data and completed
+  structured result delivery with review evidence and provenance.
+- Separated private source-system collectors from a reusable public evaluation
+  core and replaced sensitive fixtures with reproducible synthetic examples.
+
+## 中文简历表述
+
+- 设计并实现生成式 PPT 质量评估流水线，覆盖产物归档、页面渲染、规则检查、人工标注与结构化报告导出。
+- 基于 Python 与 Playwright 构建模块化适配器，支持 HTML、图片、PDF 和 PPTX 预览，并保留完整证据链。
+- 接入 Microsoft PowerPoint 原生逐页导出与 LibreOffice 后备链路，实现 PPTX 高保真渲染并记录渲染后端。
+- 实现页数、必需内容、禁用内容及缺失产物等确定性检查，并输出 JSON、CSV、XLSX 报告。
+- 将流程应用于真实演示文稿标注数据，完成逐页人工复核、结果汇总和结构化交付，并保留可追溯证据。
+- 将内部数据采集逻辑与公开评估核心解耦，使用合成数据构建可复现、可安全发布的 GitHub Demo。
+
+## Interview discussion
+
+Useful design tradeoffs to discuss:
+
+- Why deterministic checks and human review complement rather than replace
+  each other
+- Why source collectors are adapters instead of evaluator dependencies
+- How safe run markers prevent destructive overwrite mistakes
+- Where portable PPTX previews stop being sufficient and visual-fidelity
+  rendering becomes necessary
+- How synthetic fixtures preserve reproducibility without exposing user data
