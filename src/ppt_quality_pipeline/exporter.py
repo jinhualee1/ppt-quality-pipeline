@@ -30,7 +30,7 @@ def report_rows(run_dir: Path) -> list[dict[str, Any]]:
     annotations = _annotation_summary(run_dir)
     rows = []
     for item in report["items"]:
-        issues = "; ".join(issue["message"] for issue in item["issues"]) or "No automated issues"
+        issues = "；".join(issue["message"] for issue in item["issues"]) or "未发现自动检查问题"
         pages = sum(deck["page_count"] for deck in item["decks"] if deck["status"] == "rendered")
         renderers = ", ".join(dict.fromkeys(deck["renderer"] for deck in item["decks"] if deck["renderer"]))
         fidelity = ", ".join(dict.fromkeys(deck["fidelity"] for deck in item["decks"] if deck["fidelity"]))
@@ -81,16 +81,16 @@ def export_xlsx(run_dir: Path, output: Path | None = None) -> Path:
     rows = report_rows(run_dir)
     workbook = Workbook()
     sheet = workbook.active
-    sheet.title = "PPT Quality Report"
+    sheet.title = "PPT 质量报告"
     headers = [
-        "ID",
-        "Status",
-        "Query",
-        "Rendered pages",
-        "Renderers",
-        "Fidelity",
-        "Automated issues",
-        "Manual annotations",
+        "任务 ID",
+        "状态",
+        "任务要求",
+        "渲染页数",
+        "渲染后端",
+        "保真度",
+        "自动检查问题",
+        "人工标注",
     ]
     sheet.append(headers)
     for cell in sheet[1]:

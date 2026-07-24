@@ -2,7 +2,7 @@
   "name": "ppt-quality-pipeline-browser-tools",
   "private": true,
   "version": "0.2.0",
-  "description": "Browser rendering helper for PPT Quality Pipeline",
+  "description": "PPT 质量评估流水线的浏览器渲染工具",
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "scripts": {

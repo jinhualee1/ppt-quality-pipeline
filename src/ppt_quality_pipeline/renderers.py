@@ -361,7 +361,7 @@ def render_pptx_preview(
                 paragraph = paragraph[92:]
             wrapped.append(paragraph)
         draw.multiline_text((56, 110), "\n".join(wrapped[:22]), fill="#24313d", font=font, spacing=12)
-        draw.text((56, 676), "Low-fidelity text preview", fill="#a15c05", font=font)
+        draw.text((56, 676), "低保真文字预览", fill="#a15c05", font=font)
         destination = output_dir / f"page_{index + 1:03d}.png"
         image.save(destination)
         pages.append(relative_posix(destination, run_dir))
