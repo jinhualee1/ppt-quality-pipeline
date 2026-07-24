@@ -2,9 +2,9 @@
 
 ## One-line description
 
-Built an end-to-end presentation quality pipeline that converts generated
-artifacts into rendered evidence, deterministic findings, human annotations,
-and structured reports.
+Built and delivered an end-to-end presentation quality workflow that processed
+real annotation data and converted generated artifacts into rendered evidence,
+deterministic findings, human annotations, and structured delivery reports.
 
 ## Resume bullets
 
@@ -16,6 +16,8 @@ and structured reports.
   recording backend and fidelity metadata for every rendered deck.
 - Built a responsive local annotation workspace for slide-level overflow,
   overlap, blank-page, and reviewer-note workflows.
+- Applied the workflow to real presentation annotation data and completed
+  structured result delivery with review evidence and provenance.
 - Separated private source-system collectors from a reusable public evaluation
   core and replaced sensitive fixtures with reproducible synthetic examples.
 
@@ -25,6 +27,7 @@ and structured reports.
 - 基于 Python 与 Playwright 构建模块化适配器，支持 HTML、图片、PDF 和 PPTX 预览，并保留完整证据链。
 - 接入 Microsoft PowerPoint 原生逐页导出与 LibreOffice 后备链路，实现 PPTX 高保真渲染并记录渲染后端。
 - 实现页数、必需内容、禁用内容及缺失产物等确定性检查，并输出 JSON、CSV、XLSX 报告。
+- 将流程应用于真实演示文稿标注数据，完成逐页人工复核、结果汇总和结构化交付，并保留可追溯证据。
 - 将内部数据采集逻辑与公开评估核心解耦，使用合成数据构建可复现、可安全发布的 GitHub Demo。
 
 ## Interview discussion

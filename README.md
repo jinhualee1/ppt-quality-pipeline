@@ -4,6 +4,11 @@ A reproducible toolkit for collecting presentation artifacts, rendering slides,
 checking explicit requirements, conducting human visual review, and exporting
 evidence-backed quality reports.
 
+**Built from a real annotation delivery workflow:** this project has been used
+to process real presentation annotation data and deliver reviewed, structured
+results. The public repository is the privacy-safe engineering edition of that
+work, not a demo-only prototype.
+
 [中文说明](README.zh-CN.md)
 
 ![PPT Quality Review workspace](docs/images/review-workspace.png)
@@ -19,8 +24,12 @@ Task JSONL -> staged artifacts -> rendered pages -> automated issues
            -> human annotations -> JSON / CSV / XLSX reports
 ```
 
-The public repository uses synthetic fixtures only. Source-specific collectors
-can stay private while sharing the same normalized pipeline.
+The original workflow handled real task inputs, generated presentation
+artifacts, slide-level review findings, reviewer annotations, and final
+structured delivery reports. To protect data owners, this public repository
+does not include the original presentations, annotations, platform identifiers,
+or internal collectors. Its synthetic fixtures reproduce the same end-to-end
+processing and delivery contract.
 
 ## Features
 
@@ -31,6 +40,8 @@ can stay private while sharing the same normalized pipeline.
 - Page-count, required-content, forbidden-content, and missing-output checks
 - Local human-review workspace for overflow, overlap, blank pages, and notes
 - JSON, CSV, and optional XLSX exports
+- Delivery-oriented outputs that combine automated findings, manual annotations,
+  rendering evidence, and provenance
 - Safe overwrite markers and path traversal protection
 - Synthetic pass/fail demo and dependency-light unit tests
 
