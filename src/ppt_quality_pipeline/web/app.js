@@ -33,7 +33,7 @@ function pageKey(page) {
 
 function setDirty(value) {
   state.dirty = value;
-  elements.saveState.textContent = value ? "Unsaved changes" : "Saved";
+  elements.saveState.textContent = value ? "有未保存修改" : "已保存";
   elements.saveState.classList.toggle("dirty", value);
 }
 
@@ -93,13 +93,13 @@ function renderAutomatedStatus(item, deck) {
   const fidelity = document.createElement("div");
   fidelity.className = `issue-chip ${deck.fidelity === "high" ? "pass" : ""}`;
   fidelity.textContent =
-    `${deck.fidelity === "high" ? "High-fidelity" : "Preview"} render · ${deck.renderer}`;
+    `${deck.fidelity === "high" ? "高保真" : "预览"}渲染 · ${deck.renderer}`;
   elements.automatedStatus.append(fidelity);
   const issues = item.issues || [];
   if (!issues.length) {
     const chip = document.createElement("div");
     chip.className = "issue-chip pass";
-    chip.textContent = "No automated issues";
+    chip.textContent = "未发现自动检查问题";
     elements.automatedStatus.append(chip);
     return;
   }
@@ -120,7 +120,7 @@ function render() {
   elements.next.disabled = !hasPage || state.current === state.pages.length - 1;
 
   if (!page) {
-    elements.slideTitle.textContent = "No rendered slides";
+    elements.slideTitle.textContent = "没有可用的渲染页面";
     elements.slidePosition.textContent = "";
     elements.query.textContent = "";
     elements.note.value = "";
@@ -165,7 +165,7 @@ async function save() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(state.annotations),
     });
-    if (!response.ok) throw new Error(`Save failed: ${response.status}`);
+    if (!response.ok) throw new Error(`保存失败：${response.status}`);
     setDirty(false);
   } finally {
     elements.save.disabled = false;
@@ -182,7 +182,7 @@ async function initialize() {
   state.pages = flattenPages(state.report);
   const summary = state.report.summary;
   elements.runSummary.textContent =
-    `${summary.items} items · ${summary.rendered_pages} slides · ${summary.needs_review} need review`;
+    `${summary.items} 个任务 · ${summary.rendered_pages} 页 · ${summary.needs_review} 项待复核`;
   render();
 }
 
@@ -229,5 +229,5 @@ document.addEventListener("keydown", (event) => {
 initialize().catch((error) => {
   elements.runSummary.textContent = error.message;
   elements.emptyState.hidden = false;
-  elements.emptyState.textContent = "The review workspace could not load this run.";
+  elements.emptyState.textContent = "标注工作台无法加载本次运行结果。";
 });

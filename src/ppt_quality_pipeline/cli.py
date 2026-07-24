@@ -26,10 +26,10 @@ def _run_command(args: argparse.Namespace) -> int:
     )
     summary = report["summary"]
     print(
-        f"Completed {summary['items']} items: {summary['passed']} passed, "
-        f"{summary['needs_review']} need review, {summary['rendered_pages']} pages rendered."
+        f"已完成 {summary['items']} 个任务：{summary['passed']} 个通过，"
+        f"{summary['needs_review']} 个待复核，共渲染 {summary['rendered_pages']} 页。"
     )
-    print(f"Report: {Path(args.output).resolve() / 'report.json'}")
+    print(f"报告：{Path(args.output).resolve() / 'report.json'}")
     return 0
 
 
@@ -45,10 +45,10 @@ def _demo_command(args: argparse.Namespace) -> int:
     result = _run_command(namespace)
     try:
         xlsx = export_xlsx(output.resolve())
-        print(f"Excel report: {xlsx}")
+        print(f"Excel 报告：{xlsx}")
     except RuntimeError as exc:
-        print(f"Excel report skipped: {exc}")
-    print(f'Review: pqp serve --run-dir "{output.resolve()}"')
+        print(f"已跳过 Excel 报告：{exc}")
+    print(f'打开标注工作台：pqp serve --run-dir "{output.resolve()}"')
     return result
 
 
@@ -66,7 +66,7 @@ def _export_command(args: argparse.Namespace) -> int:
     }
     output = Path(args.output).resolve() if args.output else None
     result = exporters[args.format](run_dir, output)
-    print(f"Exported: {result}")
+    print(f"已导出：{result}")
     return 0
 
 
@@ -93,7 +93,7 @@ def _doctor_command(_: argparse.Namespace) -> int:
     }
     width = max(len(key) for key in checks)
     for key, available in checks.items():
-        print(f"{key.ljust(width)}  {'ok' if available else 'not found'}")
+        print(f"{key.ljust(width)}  {'可用' if available else '未找到'}")
     required = ["python", "node", "playwright_core", "chrome"]
     return 0 if all(checks[key] for key in required) else 1
 
@@ -101,38 +101,36 @@ def _doctor_command(_: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pqp",
-        description="Collect, render, evaluate, review, and export presentation quality evidence.",
+        description="采集、渲染、评估、复核并导出演示文稿质量证据。",
     )
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    run_parser = subparsers.add_parser("run", help="Run a task file through the pipeline.")
-    run_parser.add_argument("--tasks", required=True, help="JSON or JSONL task file.")
-    run_parser.add_argument("--output", required=True, help="Run output directory.")
-    run_parser.add_argument("--overwrite", action="store_true", help="Replace an existing marked run.")
-    run_parser.add_argument(
-        "--skip-render", action="store_true", help="Collect and evaluate without rendering."
-    )
+    run_parser = subparsers.add_parser("run", help="运行任务文件。")
+    run_parser.add_argument("--tasks", required=True, help="JSON 或 JSONL 任务文件。")
+    run_parser.add_argument("--output", required=True, help="运行结果输出目录。")
+    run_parser.add_argument("--overwrite", action="store_true", help="覆盖已有且带标记的运行目录。")
+    run_parser.add_argument("--skip-render", action="store_true", help="只采集和评估，不进行页面渲染。")
     run_parser.set_defaults(handler=_run_command)
 
-    demo_parser = subparsers.add_parser("demo", help="Run the synthetic portfolio demo.")
-    demo_parser.add_argument("--output", default="runs/demo", help="Demo output directory.")
-    demo_parser.add_argument("--overwrite", action="store_true", help="Replace an existing marked demo run.")
+    demo_parser = subparsers.add_parser("demo", help="运行中文合成演示。")
+    demo_parser.add_argument("--output", default="runs/demo", help="演示结果输出目录。")
+    demo_parser.add_argument("--overwrite", action="store_true", help="覆盖已有且带标记的演示目录。")
     demo_parser.set_defaults(handler=_demo_command)
 
-    serve_parser = subparsers.add_parser("serve", help="Open the human review workspace.")
-    serve_parser.add_argument("--run-dir", required=True, help="Completed run directory.")
+    serve_parser = subparsers.add_parser("serve", help="打开人工标注工作台。")
+    serve_parser.add_argument("--run-dir", required=True, help="已完成的运行目录。")
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8765)
     serve_parser.set_defaults(handler=_serve_command)
 
-    export_parser = subparsers.add_parser("export", help="Export a completed run.")
+    export_parser = subparsers.add_parser("export", help="导出已完成的运行结果。")
     export_parser.add_argument("--run-dir", required=True)
     export_parser.add_argument("--format", choices=["csv", "json", "xlsx"], default="xlsx")
     export_parser.add_argument("--output")
     export_parser.set_defaults(handler=_export_command)
 
-    doctor_parser = subparsers.add_parser("doctor", help="Check optional runtime capabilities.")
+    doctor_parser = subparsers.add_parser("doctor", help="检查可选运行能力。")
     doctor_parser.set_defaults(handler=_doctor_command)
     return parser
 

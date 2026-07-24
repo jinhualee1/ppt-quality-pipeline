@@ -12,6 +12,11 @@ function Rgb {
     return $Red + ($Green * 256) + ($Blue * 65536)
 }
 
+function Utf8 {
+    param([string]$Value)
+    return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Value))
+}
+
 function Release-ComObject {
     param([object]$Value)
     if ($null -ne $Value -and [System.Runtime.InteropServices.Marshal]::IsComObject($Value)) {
@@ -33,7 +38,7 @@ function Add-Text {
     )
     $shape = $Slide.Shapes.AddTextbox(1, $Left, $Top, $Width, $Height)
     $shape.TextFrame.TextRange.Text = $Text
-    $shape.TextFrame.TextRange.Font.Name = "Aptos"
+    $shape.TextFrame.TextRange.Font.Name = "Microsoft YaHei"
     $shape.TextFrame.TextRange.Font.Size = $Size
     $shape.TextFrame.TextRange.Font.Bold = if ($Bold) { -1 } else { 0 }
     $shape.TextFrame.TextRange.Font.Color.RGB = $Color
@@ -72,8 +77,8 @@ try {
         $accent.Line.Visible = 0
 
         if ($number -eq 1) {
-            [void](Add-Text $slide "High-fidelity PPTX rendering" 64 86 640 70 34 $navy $true)
-            [void](Add-Text $slide "Native PowerPoint export preserves fonts, shapes, colors, and slide geometry." 64 178 610 72 18 $muted)
+            [void](Add-Text $slide (Utf8 "6auY5L+d55yfIFBQVFgg5riy5p+T") 64 86 640 70 34 $navy $true)
+            [void](Add-Text $slide (Utf8 "5Y6f55SfIFBvd2VyUG9pbnQg5a+85Ye65L+d55WZ5a2X5L2T44CB5b2i54q244CB6YWN6Imy5LiO6aG16Z2i5Yeg5L2V5YWz57O744CC") 64 178 610 72 18 $muted)
             $panel = $slide.Shapes.AddShape(1, 700, 90, 190, 310)
             $panel.Fill.ForeColor.RGB = $navy
             $panel.Line.Visible = 0
@@ -83,9 +88,9 @@ try {
                 $bar.Line.Visible = 0
             }
         } elseif ($number -eq 2) {
-            [void](Add-Text $slide "Renderer priority" 64 60 540 55 30 $navy $true)
-            [void](Add-Text $slide "The pipeline selects the strongest available backend and records fidelity in every report." 64 126 720 54 17 $muted)
-            $labels = @("Microsoft PowerPoint", "LibreOffice + PDF", "Text preview fallback")
+            [void](Add-Text $slide (Utf8 "5riy5p+T5ZCO56uv5LyY5YWI57qn") 64 60 540 55 30 $navy $true)
+            [void](Add-Text $slide (Utf8 "57O757uf6Ieq5Yqo6YCJ5oup5Y+v55So55qE5pyA5L2z5ZCO56uv77yM5bm25Zyo5q+P5Lu95oql5ZGK5Lit6K6w5b2V5L+d55yf5bqm44CC") 64 126 720 54 17 $muted)
+            $labels = @("Microsoft PowerPoint", "LibreOffice + PDF", (Utf8 "5paH5a2X6aKE6KeI5YWc5bqV"))
             for ($index = 0; $index -lt $labels.Count; $index += 1) {
                 $box = $slide.Shapes.AddShape(1, 64 + ($index * 286), 235, 245, 145)
                 $box.Fill.ForeColor.RGB = if ($index -eq 0) { $navy } else { Rgb 255 255 255 }
@@ -95,9 +100,13 @@ try {
                 [void](Add-Text $slide $labels[$index] (84 + ($index * 286)) 270 205 70 18 $textColor $true)
             }
         } else {
-            [void](Add-Text $slide "Evidence you can trust" 64 72 620 55 30 $navy $true)
-            [void](Add-Text $slide "Every rendered page is traceable to its source file and rendering backend." 64 140 690 50 18 $muted)
-            $checks = @("Native slide geometry", "High-resolution PNG pages", "Backend and fidelity metadata")
+            [void](Add-Text $slide (Utf8 "5Y+v5L+h44CB5Y+v6L+95rqv55qE5Lqk5LuY6K+B5o2u") 64 72 620 55 30 $navy $true)
+            [void](Add-Text $slide (Utf8 "5q+P5LiA5byg5riy5p+T6aG16Z2i6YO96IO96L+95rqv5Yiw5rqQ5paH5Lu25LiO5a6e6ZmF5riy5p+T5ZCO56uv44CC") 64 140 690 50 18 $muted)
+            $checks = @(
+                (Utf8 "5Y6f55Sf6aG16Z2i5Yeg5L2V"),
+                (Utf8 "6auY5YiG6L6o546HIFBORyDpobXpnaI="),
+                (Utf8 "5ZCO56uv5LiO5L+d55yf5bqm5YWD5pWw5o2u")
+            )
             for ($index = 0; $index -lt $checks.Count; $index += 1) {
                 $dot = $slide.Shapes.AddShape(9, 72, 236 + ($index * 74), 26, 26)
                 $dot.Fill.ForeColor.RGB = $teal

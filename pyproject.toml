@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ppt-quality-pipeline"
 version = "0.2.0"
-description = "A reproducible pipeline for collecting, rendering, reviewing, and reporting presentation quality."
+description = "面向真实标注交付的演示文稿采集、渲染、复核与报告流水线"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

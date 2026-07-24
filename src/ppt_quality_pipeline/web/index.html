@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PPT Quality Review</title>
+    <title>PPT 质量标注工作台</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
@@ -11,23 +11,23 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">PQ</span>
         <div>
-          <strong>PPT Quality Review</strong>
-          <span id="run-summary">Loading run</span>
+          <strong>PPT 质量标注工作台</strong>
+          <span id="run-summary">正在加载运行结果</span>
         </div>
       </div>
       <div class="top-actions">
-        <span id="save-state" class="save-state">Saved</span>
+        <span id="save-state" class="save-state">已保存</span>
         <button id="save" class="primary-action" type="button">
-          <span class="wide-label">Save review</span>
-          <span class="compact-label">Save</span>
+          <span class="wide-label">保存审阅</span>
+          <span class="compact-label">保存</span>
         </button>
       </div>
     </header>
 
     <main class="workspace">
-      <aside class="item-panel" aria-label="Evaluation items">
+      <aside class="item-panel" aria-label="评估任务">
         <div class="panel-heading">
-          <span>Items</span>
+          <span>任务</span>
           <span id="item-count" class="count"></span>
         </div>
         <nav id="item-list" class="item-list"></nav>
@@ -35,40 +35,40 @@
 
       <section class="canvas-panel">
         <div class="canvas-toolbar">
-          <button id="previous" class="icon-button" type="button" title="Previous slide" aria-label="Previous slide">‹</button>
+          <button id="previous" class="icon-button" type="button" title="上一页" aria-label="上一页">&#8592;</button>
           <div class="slide-identity">
-            <strong id="slide-title">Slide</strong>
+            <strong id="slide-title">幻灯片</strong>
             <span id="slide-position"></span>
           </div>
-          <button id="next" class="icon-button" type="button" title="Next slide" aria-label="Next slide">›</button>
-          <button id="fit" class="icon-button" type="button" title="Fit slide" aria-label="Fit slide">⛶</button>
+          <button id="next" class="icon-button" type="button" title="下一页" aria-label="下一页">&#8594;</button>
+          <button id="fit" class="icon-button" type="button" title="适应窗口" aria-label="适应窗口">&#9974;</button>
         </div>
         <div id="canvas" class="canvas">
-          <img id="slide-image" alt="Rendered presentation slide">
-          <div id="empty-state" class="empty-state" hidden>No rendered slide is available.</div>
+          <img id="slide-image" alt="已渲染的演示文稿页面">
+          <div id="empty-state" class="empty-state" hidden>当前没有可用的渲染页面。</div>
         </div>
       </section>
 
-      <aside class="review-panel" aria-label="Slide review">
-        <div class="panel-heading">Review</div>
+      <aside class="review-panel" aria-label="幻灯片审阅">
+        <div class="panel-heading">人工复核</div>
         <section class="status-block">
-          <span class="field-label">Automated status</span>
+          <span class="field-label">自动检查状态</span>
           <div id="automated-status" class="automated-status"></div>
         </section>
         <fieldset class="issue-options">
-          <legend>Visual finding</legend>
-          <button type="button" data-label="overflow">Text overflow</button>
-          <button type="button" data-label="overlap">Element overlap</button>
-          <button type="button" data-label="blank">Blank or missing</button>
-          <button type="button" data-label="other">Other issue</button>
-          <button type="button" data-label="no_issue" class="no-issue">No issue</button>
+          <legend>视觉问题</legend>
+          <button type="button" data-label="overflow">文本超框</button>
+          <button type="button" data-label="overlap">元素重叠</button>
+          <button type="button" data-label="blank">空白或缺失</button>
+          <button type="button" data-label="other">其他问题</button>
+          <button type="button" data-label="no_issue" class="no-issue">未发现问题</button>
         </fieldset>
         <label class="notes">
-          <span>Notes</span>
-          <textarea id="note" rows="6" placeholder="Optional evidence or context"></textarea>
+          <span>审阅备注</span>
+          <textarea id="note" rows="6" placeholder="可选：补充问题证据或上下文"></textarea>
         </label>
         <div class="query-block">
-          <span class="field-label">User request</span>
+          <span class="field-label">任务要求</span>
           <p id="query"></p>
         </div>
       </aside>

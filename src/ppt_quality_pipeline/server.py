@@ -102,7 +102,7 @@ def serve(run_dir: Path, host: str = "127.0.0.1", port: int = 8765) -> None:
     if not (run_dir / "report.json").is_file():
         raise FileNotFoundError(f"Run report does not exist: {run_dir / 'report.json'}")
     server = ReviewServer((host, port), run_dir)
-    print(f"Review workspace: http://{host}:{port}")
+    print(f"标注工作台：http://{host}:{port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
