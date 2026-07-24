@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Quarterly Brief Demo</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 40px; display: grid; gap: 40px; background: #dfe5e8; font-family: "Segoe UI", Arial, sans-serif; color: #17212b; }
+      [data-slide] { width: 1280px; height: 720px; position: relative; overflow: hidden; padding: 58px 68px; background: #ffffff; }
+      .eyebrow { color: #b45143; font-size: 16px; font-weight: 800; text-transform: uppercase; }
+      h1 { width: 800px; margin: 90px 0 18px; font-size: 66px; line-height: 1.08; }
+      .lead { width: 700px; color: #61707a; font-size: 27px; line-height: 1.45; }
+      .bars { position: absolute; right: 80px; bottom: 70px; width: 340px; height: 430px; display: flex; align-items: end; gap: 28px; border-bottom: 3px solid #17212b; }
+      .bar { flex: 1; background: #0a938b; }
+      .bar:nth-child(1) { height: 42%; background: #e9b44c; }
+      .bar:nth-child(2) { height: 68%; background: #ee765d; }
+      .bar:nth-child(3) { height: 84%; }
+      .page { position: absolute; right: 68px; top: 58px; color: #7e8992; }
+      h2 { margin: 38px 0 10px; font-size: 46px; }
+      .sub { margin: 0; color: #697680; font-size: 21px; }
+      .scoreboard { display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; margin-top: 62px; }
+      .score { padding: 32px; background: #17212b; color: #ffffff; }
+      .score strong { display: block; color: #81d8cb; font-size: 68px; }
+      .score span { font-size: 20px; }
+      .notes { display: grid; gap: 18px; }
+      .note { padding: 20px 22px; border-left: 5px solid #e9b44c; background: #f4f6f7; }
+      .note:nth-child(2) { border-color: #ee765d; }
+      .note h3 { margin: 0 0 7px; font-size: 21px; }
+      .note p { margin: 0; color: #62707a; font-size: 17px; line-height: 1.4; }
+    </style>
+  </head>
+  <body>
+    <section data-slide>
+      <span class="eyebrow">Quarterly brief</span><span class="page">01</span>
+      <h1>Adoption moved from trial to habit</h1>
+      <p class="lead">Repeat usage grew as review teams standardized evidence capture across presentation workflows.</p>
+      <div class="bars" aria-hidden="true"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+    </section>
+    <section data-slide>
+      <span class="eyebrow">Operational signal</span><span class="page">02</span>
+      <h2>Reliability is trending in the right direction</h2>
+      <p class="sub">The final export-readiness section is intentionally absent from this synthetic deck.</p>
+      <div class="scoreboard">
+        <div class="score"><strong>96.4%</strong><span>successful render completion</span></div>
+        <div class="notes">
+          <article class="note"><h3>Stable retries</h3><p>Transient browser failures remain isolated from completed artifacts.</p></article>
+          <article class="note"><h3>Visible gaps</h3><p>Missing requirements surface as explicit review findings.</p></article>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

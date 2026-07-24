@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.venv/
+venv/
+node_modules/
+dist/
+build/
+runs/
+tmp/
+*.log
+.DS_Store
+Thumbs.db
+
+# Never commit browser state, credentials, or collected user content.
+*chrome-profile*/
+*browser-profile*/
+**/Cookies*
+**/Login Data*
+**/Web Data*
+**/History*
+data/private/
+fixtures/private/
+.env
+.env.*
